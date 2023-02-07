@@ -57,7 +57,8 @@ class Worker(threading.Thread):
                 logger.debug("checking if we are on locked screen and phone nearby")
                 status = subprocess.check_output("gnome-screensaver-command -q".split())
                 logger.debug(status)
-                if status == "The screensaver is inactive\n":
+                if status == b'The screensaver is inactive\n':
+                    logger.debug("Unlocking...")
                     subprocess.run(state.command.split())
 
             # sleep for configured interval
