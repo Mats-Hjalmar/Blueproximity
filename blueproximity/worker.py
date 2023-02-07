@@ -3,8 +3,12 @@ import subprocess
 import threading
 import time
 from collections import namedtuple
+from time import sleep
 
 from blueproximity.log import logger
+
+MAX_ACCEPTABLE_DISTANCE = 15
+OUT_OF_RANGE_COUNTER = 4
 
 State = namedtuple('State', ['name', 'distance', 'command'])
 
@@ -29,21 +33,33 @@ class Worker(threading.Thread):
             for state in ['lock', 'unlock']
         }
         # set initial state
-        state = states['unlock']
+        state = states['lock']
+        out_of_range_counter = 0
         while not self.stopped:
             last_state = state
             # determine current distance
             current_distance = self.device.distance
             logger.debug('Current distance: %s', current_distance)
             # set new state
-            if current_distance >= states['lock'].distance:
-                state = states['lock']
+            if current_distance >= states['lock'].distance and states['lock'].distance <= MAX_ACCEPTABLE_DISTANCE:
+                out_of_range_counter += 1
+                logger.debug("Out of range: %d", out_of_range_counter)
+                if out_of_range_counter >= OUT_OF_RANGE_COUNTER:
+                    state = states['lock']
             elif current_distance <= states['unlock'].distance:
                 state = states['unlock']
+                out_of_range_counter = 0
 
             if state != last_state:
                 logger.info('Running command for new state %s', state.name)
                 subprocess.run(state.command.split())
+            elif state == states["unlock"]:
+                logger.debug("checking if we are on locked screen and phone nearby")
+                status = subprocess.check_output("gnome-screensaver-command -q".split())
+                logger.debug(status)
+                if status == "The screensaver is inactive\n":
+                    subprocess.run(state.command.split())
+
             # sleep for configured interval
             time.sleep(self.configuration.getint('Proximity', 'interval'))
         # disconnect from device

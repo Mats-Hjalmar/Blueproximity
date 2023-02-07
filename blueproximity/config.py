@@ -4,25 +4,26 @@ try:
 except ImportError:
     from ConfigParser import ConfigParser
 
+"""loginctl lock-session"""
 
 DEFAULT_CONFIG = {
     'Lock': {
-        'distance': 7,
-        'duration': 7,
+        'distance': 5,
+        'duration': 1,
         'command': 'gnome-screensaver-command -l'
     },
     'Unlock': {
-        'distance': 4,
+        'distance': 0,
         'duration': 1,
         'command': 'gnome-screensaver-command -d'
     },
     'Proximity': {
-        'interval': 60
+        'interval': 3
     },
     'Log': {
         'syslog': False,
         'syslog_facility': 'local7',
-        'file': False,
+        'file': True,
         'filename': 'blueproximity.log'
     }
 }

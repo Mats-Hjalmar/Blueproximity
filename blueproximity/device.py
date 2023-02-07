@@ -32,10 +32,16 @@ class BluetoothDevice(object):
         self.sock = None
 
         self.mac = mac
-        self.port = port
         self.name = name
+        self.port = port
 
-        self.port = self.scan_ports() if not port else port
+        while port == None:
+            try:
+                port = self.scan_ports()
+            except Exception as e:
+                logger.debug(e)
+
+        self.port = port
         self.name = bluetooth.lookup_name(mac) if not name else name
 
     def scan_ports(self):
@@ -45,6 +51,7 @@ class BluetoothDevice(object):
         :return: suitable port
         :rtype: int
         '''
+
         for port in range(1, 30):
             try:
                 self.connect(port)
@@ -100,20 +107,21 @@ class BluetoothDevice(object):
         :return: distance of the device
         :rtype: int
         '''
-        if not self.connected:
-            logger.debug('Device disconnected -> reconnecting')
-            self.connect()
-        p = subprocess.run(
-            ['hcitool', 'rssi', self.mac],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL
-        )
-        if p.returncode == 0:
-            match = rssi_re.match(p.stdout.decode('utf-8'))
-            if match:
-                return abs(int(match.group(1)))
-        return 255
-
+        try:
+            if not self.connected:
+                logger.debug('Device disconnected -> reconnecting')
+                self.connect()
+            p = subprocess.run(
+                ['hcitool', 'rssi', self.mac],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL
+            )
+            if p.returncode == 0:
+                match = rssi_re.match(p.stdout.decode('utf-8'))
+                if match:
+                    return abs(int(match.group(1)))
+        except:
+            return 255
     def __str__(self):
         return 'BluetoothDevice(mac={mac}, port={port}, name={name}, '\
             'connected={connected})'.format(
