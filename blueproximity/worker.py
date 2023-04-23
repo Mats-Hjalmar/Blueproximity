@@ -3,7 +3,6 @@ import subprocess
 import threading
 import time
 from collections import namedtuple
-from time import sleep
 
 from blueproximity.log import logger
 
@@ -53,6 +52,7 @@ class Worker(threading.Thread):
             if state != last_state:
                 logger.info('Running command for new state %s', state.name)
                 subprocess.run(state.command.split())
+            """
             elif state == states["unlock"]:
                 logger.debug("checking if we are on locked screen and phone nearby")
                 status = subprocess.check_output("gnome-screensaver-command -q".split())
@@ -60,7 +60,7 @@ class Worker(threading.Thread):
                 if status == b'The screensaver is active\n':
                     logger.debug("Unlocking...")
                     subprocess.run(state.command.split())
-
+            """
             # sleep for configured interval
             time.sleep(self.configuration.getint('Proximity', 'interval'))
         # disconnect from device

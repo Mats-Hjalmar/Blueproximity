@@ -8,7 +8,7 @@ except ImportError:
 
 DEFAULT_CONFIG = {
     'Lock': {
-        'distance': 5,
+        'distance': 13,
         'duration': 1,
         'command': 'gnome-screensaver-command -l'
     },
@@ -18,7 +18,7 @@ DEFAULT_CONFIG = {
         'command': 'gnome-screensaver-command -d'
     },
     'Proximity': {
-        'interval': 3
+        'interval': 2
     },
     'Log': {
         'syslog': False,
